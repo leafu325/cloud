@@ -2,7 +2,8 @@ import sys
 
 user = sys.argv[1]
 
-current_dir= '1.txt'
+dbdata = "/dbdata"
+current_dir= dbdata+'/'+'1.txt'
 while(1):
         
     with open(current_dir, 'r') as file:
