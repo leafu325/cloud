@@ -4,9 +4,10 @@ import pandas as pd
 import sys 
 from app_transaction import create_block
 
+dbdata = "/dbdata"
 #Setting
 #Enter: python app_checkChain.py reciver
-file = os.path.join("/dbdata/0.txt")
+file = os.path.join(dbdata,"0.txt")
 
 sender = "angel"
 reciver = sys.argv[1]
@@ -28,8 +29,8 @@ while block_number != 1:
     recent_block = f"{block_number}"
     last_block = f"{block_number-1}"
     
-    recent_block_file = os.path.join(recent_block+".txt")
-    test_block_file = os.path.join(last_block+".txt")
+    recent_block_file = os.path.join(dbdata,recent_block+".txt")
+    test_block_file = os.path.join(dbdata,last_block+".txt")
     
     with open(recent_block_file,"r") as f:
         with open(test_block_file,"r") as f2:
