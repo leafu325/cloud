@@ -1,7 +1,8 @@
 import sys 
 import hashlib as ha
 
-file = './0.txt'
+dbdata = "/dbdata"
+file = dbdata+'/'+'0.txt'
 
 def create_block(new_information):
     # read super block
