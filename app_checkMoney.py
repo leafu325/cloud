@@ -1,13 +1,13 @@
 import sys
 
 balance = 0  # 初始化餘額
-current_dir = '0.txt'  # 起始點為超級區塊文件
+dbdata = "/dbdata"
+current_dir = dbdata+'/'+'0.txt'  # 起始點為超級區塊文件
 
 def calculate_balance(user):
     balance = 0  # 初始化餘額
-    #current_dir = '0.txt'  # 起始點為超級區塊文件
     
-    with open('0.txt', mode='r') as head_block:
+    with open('/dbdata/0.txt', mode='r') as head_block:
         current_block = head_block.readline().split(':')[1]
     # 循環遍歷所有區塊
     
