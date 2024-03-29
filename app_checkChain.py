@@ -6,7 +6,7 @@ from app_transaction import create_block
 
 #Setting
 #Enter: python app_checkChain.py reciver
-file = os.path.join("0.txt")
+file = os.path.join("/dbdata/0.txt")
 
 sender = "angel"
 reciver = sys.argv[1]
