@@ -10,7 +10,6 @@ local_addr = '172.17.0.10'
 port = 8001
 peers = [('172.17.0.7', 8001), ('172.17.0.5', 8001)]
 
-test_hsh_code = 'test'
 count = 2
 
 class P2PNode:
@@ -29,8 +28,8 @@ class P2PNode:
             self.sock.sendto(message.encode('utf-8'), peer)
 
     def _listen(self):
-        global test_hsh_code
         global count
+        lst = [0,0]
         while True:
             data, addr = self.sock.recvfrom(1024)
             info = data.decode('utf-8')
@@ -41,14 +40,11 @@ class P2PNode:
             elif info.split(',')[0] == "transaction":
 
                 print("===============")
-                print(f"Received {info=} from {addr}")
+                print(f"Received {info.split(',',1)[1]=} from {addr}")
                 local_transaction(info)
                 print("===============")
 
             elif info.split(',')[0] == 'check1' and info.split(',')[2] == local_addr:
-
-
-                print(f"{info}")
 
                 with open(volume_locate+'0.txt', mode = 'r') as super_block:
                     last_block = super_block.readline().split(':')[1].strip()
@@ -58,11 +54,13 @@ class P2PNode:
                     text = f.read()
                     hsh_code = hashlib.sha3_256(text.encode()).hexdigest()
 
-                    print(f"Hsh code:{hsh_code} from ({local_addr}, 8001)")
+                    #print(f"Hsh code:{hsh_code} from ({local_addr}, 8001)")
 
-                print(f"Hash code:{info.split(',')[1]} from {addr}")
+                #print(f"Hash code:{info.split(',')[1]} from {addr}")
 
-                if test_hsh_code != info.split(',')[1]:
+                lst[count-1] = [info.split(',')[1],addr]
+
+                if hsh_code != info.split(',')[1]:
                     print(f"({local_addr}, 8001) or {addr} -> NO")
                     count-=1
                 else:
@@ -70,6 +68,11 @@ class P2PNode:
                     count-=1
 
                 if count == 0:
+                    if(lst[0][0] != lst[1][0]):
+                        print(f"{lst[0][1]} or {lst[1][1]} -> NO")
+                    else:
+                        print(f"({lst[0][1]} or {lst[1][1]} -> Yes")
+
                     new_information = f"transaction,angel,{info.split(',')[3]},100\n"
                     transaction(self, new_information)
                     count = 2
