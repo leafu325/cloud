@@ -6,9 +6,9 @@ import time
 
 volume_locate = "./BChain/"
 
-local_addr = '172.17.0.10'
+local_addr = '172.17.0.11'
 port = 8001
-peers = [('172.17.0.7', 8001), ('172.17.0.5', 8001)]
+peers = [('172.17.0.10', 8001), ('172.17.0.5', 8001)]
 test_list = []
 
 class P2PNode:
@@ -27,7 +27,7 @@ class P2PNode:
             self.sock.sendto(message.encode('utf-8'), peer)
 
     def _listen(self):
-    
+
         while True:
             data, addr = self.sock.recvfrom(1024)
             info = data.decode('utf-8')
@@ -68,7 +68,7 @@ class P2PNode:
                         print(f"{test_list[0][1]} or {test_list[1][1]} -> NO")
                     else:
                         print(f"{test_list[0][1]} or {test_list[1][1]} -> Yes")
-                        
+
                     new_information = f"transaction,angel,{info.split(',')[3]},100\n"
                     transaction(self, new_information)
                     test_list.clear()
@@ -130,6 +130,7 @@ def local_transaction(new_information):
             raise E
 
         # write information
+        new_information = new_information.split(',',1)[1]
         if len(last_block_content) >= 7 :
             # if hashlibve five transaction , create new block
             create_block(new_information)
@@ -137,7 +138,6 @@ def local_transaction(new_information):
             # append information
             open(volume_locate + last_block, 'a').write(new_information)
 
-        new_information = new_information.split(',',1)[1]
         sender, reciver, money = new_information.strip().split(',')
         print(f"{sender} TRANSFER TO {reciver}: ${money}")
     except Exception as ex:
@@ -175,7 +175,7 @@ def calculate_balance(user):
 
 def checkMoney(user):
     print(f"{user} 'S MONEY : ${calculate_balance(user)}")
-            
+
 def checkChain(user):
     #setting
     file = "0.txt"
@@ -241,8 +241,9 @@ def checkLog(user):
         if(current_dir == "x"):
             break
 
+
 def checkLog(user):
-    current_dir= "1.txt" 
+    current_dir= "1.txt"
 
     while True :
 
@@ -289,7 +290,7 @@ if __name__ == "__main__":
 
         print("===============")
         if commands[0] == "transaction":
-            new_information = f"{commands[1]},{commands[2]},{commands[3]}\n"
+            new_information = f"transaction,{commands[1]},{commands[2]},{commands[3]}\n"
             transaction(node, new_information)
 
         elif commands[0] == "checkChain":
@@ -303,7 +304,7 @@ if __name__ == "__main__":
 
         elif commands[0] == "checkAllChains":
 
-            command = f"other_chekcAllChains,{local_addr},{command[1]}"
+            command = f"other_chekcAllChains,{local_addr},{commands[1]}"
             for peer in node.peers:
                 node.sock.sendto(command.encode('utf-8'), peer)
 
@@ -311,4 +312,3 @@ if __name__ == "__main__":
 
         elif commands[0] == "exit":
             break
-                                     
