@@ -47,6 +47,7 @@ class P2PNode:
 
             elif info.split(',')[0] == 'check1' and info.split(',')[2] == local_addr:
 
+
                 print(f"{info}")
 
                 with open(volume_locate+'0.txt', mode = 'r') as super_block:
@@ -137,6 +138,7 @@ def local_transaction(new_information):
             # append information
             open(volume_locate + last_block, 'a').write(new_information)
 
+        new_information = new_information.split(',',1)[1]
         sender, reciver, money = new_information.strip().split(',')
         print(f"{sender} TRANSFER TO {reciver}: ${money}")
     except Exception as ex:
