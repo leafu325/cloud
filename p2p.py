@@ -38,7 +38,7 @@ class P2PNode:
             if info.split(',')[0] == 'other_chekcAllChains':
                 other_chekcAllChains(self,info.split(',')[1],info.split(',')[2])
 
-            elif info == "transaction":
+            elif info.split(',')[0] == "transaction":
 
                 print("===============")
                 print(f"Received {info=} from {addr}")
@@ -69,7 +69,7 @@ class P2PNode:
                     count-=1
 
                 if count == 0:
-                    new_information = f"angel,{info.split(',')[3]},100\n"
+                    new_information = f"transaction,angel,{info.split(',')[3]},100\n"
                     transaction(self, new_information)
                     count = 2
 
@@ -241,7 +241,7 @@ def checkLog(user):
             break
 
 def checkLog(user):
-    current_dir= "1.txt" # 起�~K�~^
+    current_dir= "1.txt" 
 
     while True :
 
