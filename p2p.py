@@ -2,21 +2,7 @@ import os
 import hashlib
 import socket
 import threading
-"""
-Traceback (most recent call last):
-  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
-    self.run()
-  File "/usr/lib/python3.10/threading.py", line 953, in run
-    self._target(*self._args, **self._kwargs)
-  File "//p2p.py", line 68, in _listen
-    check_consensus(test_list,[hsh_code,(local_addr,port)])
-  File "//p2p.py", line 281, in check_consensus
-    to_override_node(target)
-  File "//p2p.py", line 297, in to_override_node
-    current_dir = lines[1].split(':')[1].strip()
-IndexError: list index out of range
 
-"""
 
 volume_locate = "./BChain/"
 
