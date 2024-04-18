@@ -2,8 +2,11 @@ import os
 import hashlib
 import socket
 import threading
-import time
-
+"""
+File "//p2p.py", line 309, in calculate_consensus
+    transaction = info.split(',')[4]
+IndexError: list index out of range
+"""
 volume_locate = "./BChain/"
 
 local_addr = '172.17.0.11'
@@ -286,7 +289,7 @@ def do_consensus(start_addr):
             for index, line in enumerate(lines[2:],start=2):
                     
                 message = f"calculate_consensus,{start_addr},{current_dir},{index},{line}"
-                node.sock.sendto(message.encode('utf-8'), local_addr)
+                node.sock.sendto(message.encode('utf-8'), (local_addr,8001))
 
 
             current_dir = lines[1].split(':')[1].strip()
@@ -303,7 +306,7 @@ def calculate_consensus(info,target_addr):
     global percentage_element
     global percentage_denominator
 
-    if info.split(',')[0] == 'calculate_consensus':
+    if info.split(',')[0] == 'calculate_consensus' and info.split(',')[2] != 'end':
         current_dir = info.split(',')[2]
         index = info.split(',')[3]
         transaction = info.split(',')[4]
@@ -322,7 +325,7 @@ def calculate_consensus(info,target_addr):
     elif info.split(',')[2] == 'end':
         percentage = percentage_element/percentage_denominator
         
-        if percentage < 0.5:
+        if percentage < 0.5 and percentage_denominator != 0:
             message = f"to_override_node,{target_addr}"
             node.sock.sendto(message.encode('utf-8'), info.split(',')[1])
 
