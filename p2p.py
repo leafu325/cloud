@@ -325,7 +325,9 @@ def calculate_consensus(info,target_addr):
             percentage_element += 1
 
     elif info.split(',')[2] == 'end':
-        percentage = percentage_element/percentage_denominator
+        
+        if percentage_denominator!=0:
+            percentage = percentage_element/percentage_denominator
         
         if percentage < 0.5 and percentage_denominator != 0:
             message = f"to_override_node,{target_addr}"
