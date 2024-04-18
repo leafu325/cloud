@@ -291,7 +291,8 @@ def do_consensus(start_addr):
             for index, line in enumerate(lines[2:],start=2):
                     
                 message = f"calculate_consensus,{start_addr},{current_dir},{index},{line}"
-                node.sock.sendto(message.encode('utf-8'), (local_addr,8001))
+                print(f"message: {message}")
+                node.sock.sendto(message.encode('utf-8'), peer)
 
 
             current_dir = lines[1].split(':')[1].strip()
@@ -303,12 +304,15 @@ def do_consensus(start_addr):
 
 percentage_element = 0
 percentage_denominator = 0
+percentage = 1
 def calculate_consensus(info,target_addr):
 
     global percentage_element
     global percentage_denominator
+    global percentage
 
     if info.split(',')[0] == 'calculate_consensus' and info.split(',')[2] != 'end':
+
         current_dir = info.split(',')[2]
         index = info.split(',')[3]
         transaction = info.split(',')[4]
@@ -324,10 +328,9 @@ def calculate_consensus(info,target_addr):
             percentage_denominator += 1
             percentage_element += 1
 
-    elif info.split(',')[2] == 'end':
+        percentage = percentage_element/percentage_denominator
         
-        if percentage_denominator!=0:
-            percentage = percentage_element/percentage_denominator
+    elif info.split(',')[2] == 'end':
         
         if percentage < 0.5 and percentage_denominator != 0:
             message = f"to_override_node,{target_addr}"
