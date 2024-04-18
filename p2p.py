@@ -72,7 +72,7 @@ class P2PNode:
                     test_list.clear()
 
             elif info.split(',')[0] == 'to_override_node':
-                to_override_node(info.split(',')[1])
+                to_override_node(info.split(',',1)[1])
 
             elif info.split(',')[0] == 'for_ovreride_node':
                 for_ovreride_node(info)
@@ -286,44 +286,41 @@ def check_consensus(test_list,local_list):
             target = local_list[1]
             override_from = test_list[0][1]
 
-        addr_port_parts = override_from.strip('()').split(',')
-        tuple_local_addr = addr_port_parts[0].strip()
-        tuple_addr = (tuple_local_addr, port)
+    
         message = f"to_override_node,{target}"
-        node.sock.sendto(message.encode('utf-8'), tuple_addr)
+        node.sock.sendto(message.encode('utf-8'), override_from)
 
     elif num_different == 3:
         print("系統廢了")
     
 def to_override_node(target_addr):
     
-    current_dir= "0.txt"
+    current_dir= "1.txt"
 
     while True :
-
-        with open(volume_locate + current_dir, 'r') as file:
-            lines = file.read()
-
-        message = f"for_ovreride_node,{current_dir},{lines},{local_addr}"
-
-        addr_port_parts = target_addr.strip('()').split(',')
-        tuple_local_addr = addr_port_parts[0].strip()
-        tuple_addr = (tuple_local_addr, port)
-
-        #node.sock.sendto(message.encode('utf-8'), target_addr)
-        node.sock.sendto(message.encode('utf-8'), tuple_addr)
-
-        current_dir = lines.split(':')[1].split('\n')[0].strip()
 
         if(current_dir == "x"):
             print(f"{local_addr} overriding has finished.")
             break
 
+        with open(volume_locate + current_dir, 'r') as file:
+            lines = file.read()
+
+        message = f"for_ovreride_node,{current_dir},{lines},{local_addr}"
+        addr_port_parts = target_addr.strip('()').split(',')
+        tuple_addr = addr_port_parts[0].strip('\'\'')  
+        tuple_addr = (tuple_addr, port)
+
+        node.sock.sendto(message.encode('utf-8'), tuple_addr)
+        
+        current_dir = lines.split(':')[1].split('\n')[0].strip()
+
+
 def for_ovreride_node(content):
 
     current_dir = content.split(',')[1]
     with open(volume_locate + current_dir, 'w') as file:
-        file.write(content)
+        file.write(content[3:len(content)-2])
 
 if __name__ == "__main__":
 
