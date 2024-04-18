@@ -208,7 +208,7 @@ def checkChain(user):
         recent_block_file = os.path.join(recent_block+".txt")
         test_block_file = os.path.join(last_block+".txt")
 
-    with open(volume_locate + recent_block_file,"r") as f:
+        with open(volume_locate + recent_block_file,"r") as f:
             with open(volume_locate + test_block_file,"r") as f2:
 
                 text2 = f2.read()
@@ -223,7 +223,9 @@ def checkChain(user):
                     print("block"+recent_block+"'s hashlibsh code : "+str(hsh))
                 else:
                     print("block"+last_block+" -> ok")
-            block_number-=1
+
+        block_number-=1
+
     if(check == 1):
         print("OK")
 
