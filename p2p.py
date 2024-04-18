@@ -2,6 +2,21 @@ import os
 import hashlib
 import socket
 import threading
+"""
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "//p2p.py", line 68, in _listen
+    check_consensus(test_list,[hsh_code,(local_addr,port)])
+  File "//p2p.py", line 281, in check_consensus
+    to_override_node(target)
+  File "//p2p.py", line 297, in to_override_node
+    current_dir = lines[1].split(':')[1].strip()
+IndexError: list index out of range
+
+"""
 
 volume_locate = "./BChain/"
 
@@ -71,6 +86,9 @@ class P2PNode:
                     new_information = f"transaction,angel,{info.split(',')[3]},100\n"
                     transaction(self, new_information)
                     test_list.clear()
+
+                elif info.split(',')[0] == 'to_override_node':
+                    to_override_node(info.split(',')[1])
 
                 elif info.split(',')[0] == 'for_ovreride_node':
                     for_ovreride_node(info)
@@ -269,16 +287,25 @@ def check_consensus(test_list,local_list):
     elif num_different == 2:
 
         target = None
+        override_from = None
         if test_list[0][0] != test_list[1][0]:
 
             if test_list[0][0] == local_list[0]:
                 target = test_list[1][1]
+                override_from = local_list[0]
+
             elif test_list[1][0] == local_list[0]:
                 target = test_list[0][1]
+                override_from = local_list[0]
+
         elif test_list[0][0] != local_list[0]:
             target = local_list[1]
+            override_from = test_list[0][0]
 
-        to_override_node(target)
+        #to_override_node(target)
+        message = f"to_override_node,{target}"
+        node.sock.sendto(message.encode('utf-8'), override_from)
+
     elif num_different == 3:
         print("系統廢了")
     
@@ -289,12 +316,12 @@ def to_override_node(target_addr):
     while True :
 
         with open(volume_locate + current_dir, 'r') as file:
-            lines = file.readlines()
+            lines = file.read()
 
         message = f"for_ovreride_node,{current_dir},{lines},{local_addr}"
         node.sock.sendto(message.encode('utf-8'), target_addr)
 
-        current_dir = lines[1].split(':')[1].strip()
+        current_dir = lines.split(':')[1].split('\n')[0].strip()
 
         if(current_dir == "x"):
             print(f"{local_addr} overriding has finished.")
