@@ -38,7 +38,7 @@ class P2PNode:
             if info.split(',')[0] == 'other_chekcAllChains' and info.split(',')[1] != local_addr:
                 other_chekcAllChains(self,info.split(',')[1],info.split(',')[2])
 
-            elif info.split(',')[0] == 'calculate_consensus':
+            elif info.split(',')[0] == 'calculate_consensus' and info.split(',')[1] != local_addr:
                 calculate_consensus(info,local_addr)
 
             elif info.split(',')[0] == 'do_consensus':
@@ -291,7 +291,7 @@ def do_consensus(start_addr):
             for index, line in enumerate(lines[2:],start=2):
                     
                 message = f"calculate_consensus,{start_addr},{current_dir},{index},{line}"
-                print(f"message: {message}")
+                print(f"message: {message} from: {local_addr}")
                 node.sock.sendto(message.encode('utf-8'), peer)
 
 
