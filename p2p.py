@@ -3,7 +3,6 @@ import hashlib
 import socket
 import threading
 
-
 volume_locate = "./BChain/"
 
 local_addr = '172.17.0.11'
@@ -52,7 +51,6 @@ class P2PNode:
                     text = f.read()
                     hsh_code = hashlib.sha3_256(text.encode()).hexdigest()
 
-
                 test_list.append([info.split(',')[1],addr])
 
                 if hsh_code != info.split(',')[1]:
@@ -73,11 +71,11 @@ class P2PNode:
                     transaction(self, new_information)
                     test_list.clear()
 
-                elif info.split(',')[0] == 'to_override_node':
-                    to_override_node(info.split(',')[1])
+            elif info.split(',')[0] == 'to_override_node':
+                to_override_node(info.split(',')[1])
 
-                elif info.split(',')[0] == 'for_ovreride_node':
-                    for_ovreride_node(info)
+            elif info.split(',')[0] == 'for_ovreride_node':
+                for_ovreride_node(info)
             
 def transaction(communicator, new_information):
 
@@ -278,19 +276,21 @@ def check_consensus(test_list,local_list):
 
             if test_list[0][0] == local_list[0]:
                 target = test_list[1][1]
-                override_from = local_list[0]
+                override_from = local_list[1]
 
             elif test_list[1][0] == local_list[0]:
                 target = test_list[0][1]
-                override_from = local_list[0]
+                override_from = local_list[1]
 
         elif test_list[0][0] != local_list[0]:
             target = local_list[1]
-            override_from = test_list[0][0]
+            override_from = test_list[0][1]
 
-        #to_override_node(target)
+        addr_port_parts = override_from.strip('()').split(',')
+        tuple_local_addr = addr_port_parts[0].strip()
+        tuple_addr = (tuple_local_addr, port)
         message = f"to_override_node,{target}"
-        node.sock.sendto(message.encode('utf-8'), override_from)
+        node.sock.sendto(message.encode('utf-8'), tuple_addr)
 
     elif num_different == 3:
         print("系統廢了")
@@ -305,7 +305,13 @@ def to_override_node(target_addr):
             lines = file.read()
 
         message = f"for_ovreride_node,{current_dir},{lines},{local_addr}"
-        node.sock.sendto(message.encode('utf-8'), target_addr)
+
+        addr_port_parts = target_addr.strip('()').split(',')
+        tuple_local_addr = addr_port_parts[0].strip()
+        tuple_addr = (tuple_local_addr, port)
+
+        #node.sock.sendto(message.encode('utf-8'), target_addr)
+        node.sock.sendto(message.encode('utf-8'), tuple_addr)
 
         current_dir = lines.split(':')[1].split('\n')[0].strip()
 
