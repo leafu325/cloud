@@ -35,6 +35,14 @@ class P2PNode:
             if info.split(',')[0] == 'other_chekcAllChains' and info.split(',')[1] != local_addr:
                 other_chekcAllChains(self,info.split(',')[1],info.split(',')[2])
 
+            elif info.split(',')[0] == 'calculate_consensus':
+                calculate_consensus(info,local_addr)
+
+            elif info.split(',')[0] == 'do_consensus':
+                do_consensus(info.split(',')[1],local_addr)
+
+            elif info.split(',')[0] == 'to_override_node':
+                to_override_node(info.split(',')[1])
             elif info.split(',')[0] == "transaction":
 
                 print("===============")
@@ -52,9 +60,6 @@ class P2PNode:
                     text = f.read()
                     hsh_code = hashlib.sha3_256(text.encode()).hexdigest()
 
-                    #print(f"Hsh code:{hsh_code} from ({local_addr}, 8001)")
-
-                #print(f"Hash code:{info.split(',')[1]} from {addr}")
 
                 test_list.append([info.split(',')[1],addr])
 
@@ -72,8 +77,13 @@ class P2PNode:
                     new_information = f"transaction,angel,{info.split(',')[3]},100\n"
                     transaction(self, new_information)
                     test_list.clear()
+            
+            elif info.split(',')[0] == 'for_ovreride_node':
+                for_ovreride_node(info)
+
 
 def transaction(communicator, new_information):
+    do_consensus(local_addr)
     local_transaction(new_information)
     communicator.send_messages(new_information)
 
@@ -227,30 +237,6 @@ def checkLog(user):
         with open(volume_locate + current_dir, 'r') as file:
             lines = file.readlines()
 
-
-        for line in lines[2:]:
-            transaction = line.strip().split(',')
-            sender, reciver, money = transaction
-
-            if reciver == user or sender == user:
-                information = f"{sender},{reciver},{money}\n"
-                print(information,end='')
-
-        current_dir = lines[1].split(':')[1].strip()
-
-        if(current_dir == "x"):
-            break
-
-
-def checkLog(user):
-    current_dir= "1.txt"
-
-    while True :
-
-        with open(volume_locate + current_dir, 'r') as file:
-            lines = file.readlines()
-
-
         for line in lines[2:]:
             transaction = line.strip().split(',')
             sender, reciver, money = transaction
@@ -277,6 +263,98 @@ def other_chekcAllChains(self,start_addr,user):
 
         for peer in self.peers:
             self.sock.sendto(message.encode('utf-8'), peer)
+
+def do_consensus(start_addr):
+    #Local container is A
+    #for each peers
+    #A send a command to container B
+    #Contaner B return transaction each meassage until next block x
+    #message contains transaction, block ,and line?
+    #calculate the incorrect percentage of blocks
+    #Is it greater than 50? Yes -> override NO -> Nothing
+    #Next container C
+
+    for peer in node.peers:
+
+        current_dir= "1.txt"
+
+        while True :
+
+            with open(volume_locate + current_dir, 'r') as file:
+                lines = file.readlines()
+
+            for index, line in enumerate(lines[2:],start=2):
+                    
+                message = f"calculate_consensus,{start_addr},{current_dir},{index},{line}"
+                node.sock.sendto(message.encode('utf-8'), local_addr)
+
+
+            current_dir = lines[1].split(':')[1].strip()
+
+            if(current_dir == "x"):
+                message = f"calculate_consensus,{start_addr},end,{local_addr}"
+                node.sock.sendto(message.encode('utf-8'), peer)
+                break
+
+percentage_element = 0
+percentage_denominator = 0
+def calculate_consensus(info,target_addr):
+
+    global percentage_element
+    global percentage_denominator
+
+    if info.split(',')[0] == 'calculate_consensus':
+        current_dir = info.split(',')[2]
+        index = info.split(',')[3]
+        transaction = info.split(',')[4]
+
+        with open(volume_locate + current_dir, 'r') as file:
+            lines = file.readlines()
+        
+        test_transaction = lines[index]
+        
+        if test_transaction == transaction:
+            percentage_denominator += 1
+        else:
+            percentage_denominator += 1
+            percentage_element += 1
+
+    elif info.split(',')[2] == 'end':
+        percentage = percentage_element/percentage_denominator
+        
+        if percentage < 0.5:
+            message = f"to_override_node,{target_addr}"
+            node.sock.sendto(message.encode('utf-8'), info.split(',')[1])
+
+        percentage_denominator = 0
+        percentage_element = 0
+    
+
+def to_override_node(target_addr):
+    
+    current_dir= "1.txt"
+
+    while True :
+
+        with open(volume_locate + current_dir, 'r') as file:
+            lines = file.readlines()
+
+        message = f"for_ovreride_node,{current_dir},{lines},{local_addr}"
+        node.sock.sendto(message.encode('utf-8'), target_addr)
+
+        current_dir = lines[1].split(':')[1].strip()
+
+        if(current_dir == "x"):
+            print(f"{local_addr} overriding has finished.")
+            break
+    
+def for_ovreride_node(content):
+
+    current_dir = content.split(',')[1]
+    with open(volume_locate + current_dir, 'w') as file:
+        file.write(content)
+    
+
 
 if __name__ == "__main__":
 
@@ -308,7 +386,6 @@ if __name__ == "__main__":
             for peer in node.peers:
                 node.sock.sendto(command.encode('utf-8'), peer)
 
-            time.sleep(1)
 
         elif commands[0] == "exit":
             break
