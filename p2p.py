@@ -66,7 +66,6 @@ class P2PNode:
 
                     check_consensus(test_list,[hsh_code,(local_addr,port)])
                     
-
                     new_information = f"transaction,angel,{info.split(',')[3]},100\n"
                     transaction(self, new_information)
                     test_list.clear()
@@ -300,7 +299,7 @@ def to_override_node(target_addr):
     while True :
 
         if(current_dir == "x"):
-            print(f"{local_addr} overriding has finished.")
+            print(f"{target_addr} overriding has finished.")
             break
 
         with open(volume_locate + current_dir, 'r') as file:
@@ -313,14 +312,18 @@ def to_override_node(target_addr):
 
         node.sock.sendto(message.encode('utf-8'), tuple_addr)
         
-        current_dir = lines.split(':')[1].split('\n')[0].strip()
+        current_dir = lines.split('\n')[1].split(':')[1].strip()
 
 
-def for_ovreride_node(content):
+def for_ovreride_node(info):
 
-    current_dir = content.split(',')[1]
+    current_dir = info.split(',')[1]
     with open(volume_locate + current_dir, 'w') as file:
-        file.write(content[3:len(content)-2])
+        content = info.split(',',3)[3]
+        content = info.rsplit(',',1)[0]
+        print(f"content:{content}")
+        file.write(content)
+
 
 if __name__ == "__main__":
 
