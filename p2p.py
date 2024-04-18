@@ -320,7 +320,7 @@ def for_ovreride_node(info):
     current_dir = info.split(',')[1]
     with open(volume_locate + current_dir, 'w') as file:
         content = info.split(',',3)[3]
-        content = info.rsplit(',',1)[0]
+        content = content.rsplit(',',1)[0]
         print(f"content:{content}")
         file.write(content)
 
