@@ -48,12 +48,12 @@ class P2PNode:
                 local_transaction(info)
                 print("===============")
 
-            elif info.split(',')[0] == 'check1' and info.split(',')[2] == local_addr:
+            elif info.split(',')[0] == 'check1' and info.rsplit(',',2)[1] == local_addr:
 
+                print(f'{addr:}')
                 receive_hsh_code_list = info.split(',',1)[1].rsplit(',',2)[0]
                 hsh_code_list = string_to_list(receive_hsh_code_list)
 
-                print(f'{addr:}')
                 for index in hsh_code_list:
                     print(f'{index}.txt->error')
 
@@ -259,16 +259,17 @@ def other_chekcAllChains(self,start_addr,user):
 
                 if(test_hsh_code != hsh):
 
-                    print("block"+last_block+" -> error")
-                    print("block"+recent_block+"'s hashlibsh code : "+str(hsh))
+                    #print("block"+last_block+" -> error")
+                    #print("block"+recent_block+"'s hashlibsh code : "+str(hsh))
 
                     incorrect_list.append(int(last_block))
-                else:
-                    print("block"+last_block+" -> ok")
+                #else:
+                    #print("block"+last_block+" -> ok")
 
         block_number-=1
 
     message = f"check1,{incorrect_list},{start_addr},{user}"
+
     self.sock.sendto(message.encode('utf-8'), (start_addr,port))
         
 def check_consensus(test_list,local_list):
