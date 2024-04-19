@@ -2,6 +2,7 @@ import os
 import hashlib
 import socket
 import threading
+import ast
 
 volume_locate = "./BChain/"
 
@@ -9,6 +10,11 @@ local_addr = '172.17.0.2'
 port = 8001
 peers = [('172.17.0.3', 8001), ('172.17.0.4', 8001)]
 test_list = []
+
+def string_to_list(string):
+    # 使用 ast.literal_eval 将字符串转换为列表
+    lst = ast.literal_eval(string)
+    return lst
 
 class P2PNode:
     def __init__(self, port, peers):
@@ -45,9 +51,10 @@ class P2PNode:
             elif info.split(',')[0] == 'check1' and info.split(',')[2] == local_addr:
                 
                 receive_hsh_code_list = info.split(',',1)[1].rsplit(',',2)[0]
-
+                hsh_code_list = string_to_list(receive_hsh_code_list)
                 print(f'{addr:}')
-                for index in receive_hsh_code_list:
+
+                for index in hsh_code_list:
                     print(f'{index}->error')
 
             elif info.split(',')[0] == 'to_override_node':
@@ -255,7 +262,7 @@ def other_chekcAllChains(self,start_addr,user):
                     print("block"+last_block+" -> error")
                     print("block"+recent_block+"'s hashlibsh code : "+str(hsh))
 
-                    incorrect_list.append(last_block)
+                    incorrect_list.append(int(last_block))
                 else:
                     print("block"+last_block+" -> ok")
 
