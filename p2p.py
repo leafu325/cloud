@@ -2,19 +2,13 @@ import os
 import hashlib
 import socket
 import threading
-import ast
 
 volume_locate = "./BChain/"
 
-local_addr = '172.17.0.2'
+local_addr = '172.17.0.11'
 port = 8001
-peers = [('172.17.0.3', 8001), ('172.17.0.4', 8001)]
+peers = [('172.17.0.10', 8001), ('172.17.0.5', 8001)]
 test_list = []
-
-def string_to_list(string):
-    # 使用 ast.literal_eval 将字符串转换为列表
-    lst = ast.literal_eval(string)
-    return lst
 
 class P2PNode:
     def __init__(self, port, peers):
@@ -39,7 +33,6 @@ class P2PNode:
 
             if info.split(',')[0] == 'other_chekcAllChains' and info.split(',')[1] != local_addr:
                 other_chekcAllChains(self,info.split(',')[1],info.split(',')[2])
-                
     
             if info.split(',')[0] == "transaction":
 
@@ -48,15 +41,67 @@ class P2PNode:
                 local_transaction(info)
                 print("===============")
 
-            elif info.split(',')[0] == 'check1' and info.rsplit(',',2)[1] == local_addr:
+            elif info.split(',')[0] == 'check1' and info.split(',')[2] == local_addr:
 
-                print(f'{addr:}')
-                receive_hsh_code_list = info.split(',',1)[1].rsplit(',',2)[0]
-                hsh_code_list = string_to_list(receive_hsh_code_list)
+                with open(volume_locate+'0.txt', mode = 'r') as super_block:
+                    last_block = super_block.readline().split(':')[1].strip()
 
-                for index in hsh_code_list:
-                    print(f'{index}.txt->error')
+                with open(volume_locate+last_block,'r') as f:
 
+                    text = f.read()
+                    hsh_code = hashlib.sha3_256(text.encode()).hexdigest()
+
+                test_list.append([info.split(',')[1],addr])
+
+                if hsh_code != info.split(',')[1]:
+                    print(f"({local_addr}, 8001) or {addr} -> NO")
+                else:
+                    print(f"({local_addr}, 8001) or {addr} -> Yes")
+
+                if  len(test_list) == 2:
+                    if test_list[0][0] != test_list[1][0]:
+                        print(f"{test_list[0][1]} or {test_list[1][1]} -> NO")
+                    else:
+                        print(f"{test_list[0][1]} or {test_list[1][1]} -> Yes")
+
+                    check_consensus(test_list,[hsh_code,(local_addr,port)])
+                    
+                    file = "0.txt"
+
+                    last_block = open(volume_locate + file, mode='r').readline().split(':')[1].strip()
+                    block_number = int(last_block.split('.')[0])
+                    
+                    while block_number != 1:
+
+                        recent_block = f"{block_number}"
+                        last_block = f"{block_number-1}"
+
+                        recent_block_file = os.path.join(recent_block+".txt")
+                        test_block_file = os.path.join(last_block+".txt")
+
+                        with open(volume_locate + recent_block_file,"r") as f:
+                            with open(volume_locate + test_block_file,"r") as f2:
+
+                                text2 = f2.read()
+                                test_hsh_code = hashlib.sha3_256(text2.encode()).hexdigest()
+
+                                text = f.read().split('\n')
+                                hsh = text[0].split(': ')[1].strip()
+
+                                if(test_hsh_code != hsh):
+
+                                    print("block"+last_block+" -> error")
+                                    print("block"+recent_block+"'s hashlibsh code : "+str(hsh))
+                                else:
+                                    print("block"+last_block+" -> ok")
+
+                        block_number-=1
+
+                    new_information = f"transaction,angel,{info.split(',')[3]},100\n"
+                    transaction(self, new_information)
+                    test_list.clear()
+
+                    
             elif info.split(',')[0] == 'to_override_node':
                 to_override_node(info.split(',',1)[1])
 
@@ -171,6 +216,8 @@ def checkChain(user):
     file = "0.txt"
     check = 1
 
+    # read super block for finding last block
+
     last_block = open(volume_locate + file, mode='r').readline().split(':')[1].strip()
     block_number = int(last_block.split('.')[0])
 
@@ -231,47 +278,20 @@ def checkLog(user):
             break
 
 def other_chekcAllChains(self,start_addr,user):
+    
+    with open(volume_locate+'0.txt', mode = 'r') as super_block:
+        last_block = super_block.readline().split(':')[1].strip()
 
-    #setting
-    file = "0.txt"
+    with open(volume_locate+last_block,'r') as f:
 
-    last_block = open(volume_locate + file, mode='r').readline().split(':')[1].strip()
-    block_number = int(last_block.split('.')[0])
+        text = f.read()
+        hsh_code = hashlib.sha3_256(text.encode()).hexdigest()
 
-    #checkChashlibin
-    incorrect_list = []
-    while block_number != 1:
+        message = f"check1,{hsh_code},{start_addr},{user}"
 
-        recent_block = f"{block_number}"
-        last_block = f"{block_number-1}"
+        for peer in self.peers:
+            self.sock.sendto(message.encode('utf-8'), peer)
 
-        recent_block_file = os.path.join(recent_block+".txt")
-        test_block_file = os.path.join(last_block+".txt")
-
-        with open(volume_locate + recent_block_file,"r") as f:
-            with open(volume_locate + test_block_file,"r") as f2:
-
-                text2 = f2.read()
-                test_hsh_code = hashlib.sha3_256(text2.encode()).hexdigest()
-
-                text = f.read().split('\n')
-                hsh = text[0].split(': ')[1].strip()
-
-                if(test_hsh_code != hsh):
-
-                    #print("block"+last_block+" -> error")
-                    #print("block"+recent_block+"'s hashlibsh code : "+str(hsh))
-
-                    incorrect_list.append(int(last_block))
-                #else:
-                    #print("block"+last_block+" -> ok")
-
-        block_number-=1
-
-    message = f"check1,{incorrect_list},{start_addr},{user}"
-
-    self.sock.sendto(message.encode('utf-8'), (start_addr,port))
-        
 def check_consensus(test_list,local_list):
 
     num_different = len({test_list[0][0], test_list[1][0], local_list[0]})
@@ -359,41 +379,10 @@ if __name__ == "__main__":
 
         elif commands[0] == "checkAllChains":
 
-            file = "0.txt"
-
-            last_block = open(volume_locate + file, mode='r').readline().split(':')[1].strip()
-            block_number = int(last_block.split('.')[0])
-
-                #checkChashlibin
-            incorrect_list = []
-            while block_number != 1:
-
-                recent_block = f"{block_number}"
-                last_block = f"{block_number-1}"
-
-                recent_block_file = os.path.join(recent_block+".txt")
-                test_block_file = os.path.join(last_block+".txt")
-
-                with open(volume_locate + recent_block_file,"r") as f:
-                    with open(volume_locate + test_block_file,"r") as f2:
-
-                        text2 = f2.read()
-                        test_hsh_code = hashlib.sha3_256(text2.encode()).hexdigest()
-
-                        text = f.read().split('\n')
-                        hsh = text[0].split(': ')[1].strip()
-
-                        if(test_hsh_code != hsh):
-                                incorrect_list.append(int(last_block))
-
-                block_number-=1    
-            print(f'{local_addr}:')
-            for index in incorrect_list:
-                print(f'{index}.txt->error')
-
             command = f"other_chekcAllChains,{local_addr},{commands[1]}"
             for peer in node.peers:
                 node.sock.sendto(command.encode('utf-8'), peer)
+
 
         elif commands[0] == "exit":
             break
