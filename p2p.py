@@ -49,13 +49,13 @@ class P2PNode:
                 print("===============")
 
             elif info.split(',')[0] == 'check1' and info.split(',')[2] == local_addr:
-                
+
                 receive_hsh_code_list = info.split(',',1)[1].rsplit(',',2)[0]
                 hsh_code_list = string_to_list(receive_hsh_code_list)
-                print(f'{addr:}')
 
+                print(f'{addr:}')
                 for index in hsh_code_list:
-                    print(f'{index}->error')
+                    print(f'{index}.txt->error')
 
             elif info.split(',')[0] == 'to_override_node':
                 to_override_node(info.split(',',1)[1])
@@ -358,10 +358,41 @@ if __name__ == "__main__":
 
         elif commands[0] == "checkAllChains":
 
+            file = "0.txt"
+
+            last_block = open(volume_locate + file, mode='r').readline().split(':')[1].strip()
+            block_number = int(last_block.split('.')[0])
+
+                #checkChashlibin
+            incorrect_list = []
+            while block_number != 1:
+
+                recent_block = f"{block_number}"
+                last_block = f"{block_number-1}"
+
+                recent_block_file = os.path.join(recent_block+".txt")
+                test_block_file = os.path.join(last_block+".txt")
+
+                with open(volume_locate + recent_block_file,"r") as f:
+                    with open(volume_locate + test_block_file,"r") as f2:
+
+                        text2 = f2.read()
+                        test_hsh_code = hashlib.sha3_256(text2.encode()).hexdigest()
+
+                        text = f.read().split('\n')
+                        hsh = text[0].split(': ')[1].strip()
+
+                        if(test_hsh_code != hsh):
+                                incorrect_list.append(int(last_block))
+
+                block_number-=1    
+            print(f'{local_addr}:')
+            for index in incorrect_list:
+                print(f'{index}.txt->error')
+
             command = f"other_chekcAllChains,{local_addr},{commands[1]}"
             for peer in node.peers:
                 node.sock.sendto(command.encode('utf-8'), peer)
-
 
         elif commands[0] == "exit":
             break
