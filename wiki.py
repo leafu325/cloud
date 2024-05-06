@@ -68,7 +68,10 @@ def extract_keywords(text):
     return keywords
         
 def search_information_from_wiki(text):
-
+    
+    global data_string 
+    data_string = ""
+    
     key_words = extract_keywords(text)
 
     for key in key_words:
