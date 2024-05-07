@@ -3,15 +3,15 @@ import threading
 from ollama import Client
 from wiki import search_information_from_wiki
 
-port = 8001 
+port = 8001
 
 class P2PNode:
     def __init__(self):
         self.client = Client(host='http://localhost:11434')
-        self.port = 8001 
-        self.peers = [('172.17.0.2', port)]  
+        self.port = 8001
+        self.peers = [('172.17.0.3', port)]
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind(('172.17.0.3', self.port)) 
+        self.sock.bind(('172.17.0.2', self.port)) 
 
     def start(self):
         threading.Thread(target=self._say).start()
@@ -20,22 +20,36 @@ class P2PNode:
         while True:
             content = input("Say something: ")
             self.inference(content)
-    
+
     def send_messages(self, message):
         for peer in self.peers:
             self.sock.sendto(message.encode('utf-8'), peer)
 
     def inference(self, content):
-        data_string = search_information_from_wiki(content)
-        response = self.client.chat(model='gemma:2b', messages=[
+
+        keyword = self.client.chat(model='llama3', messages = [
+            {
+            'role': 'user',
+            'content':content,
+                },
+            {
+            'role': 'user',
+            'content': 'Please only return key word or main topic of this content for me',
+                },
+            ])
+
+        data_string = search_information_from_wiki(keyword['message']['content'])
+
+        response = self.client.chat(model='llama3', messages=[
             {
             'role': 'user',
             'content': content,
             },
-           {
+            {
             'role': 'assistant',
-            'content': data_string,
-            },
+            'content': f"Please use following infomation tell user about {keyword['message']['content']}:\n {data_string}",
+            }
+            ,
         ])
 
         message = f"{response['message']['content']}"
